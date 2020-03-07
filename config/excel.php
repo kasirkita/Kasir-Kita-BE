@@ -33,7 +33,7 @@ return [
         |
         */
         'csv'                    => [
-            'delimiter'              => ',',
+            'delimiter'              => ';',
             'enclosure'              => '"',
             'line_ending'            => PHP_EOL,
             'use_bom'                => false,
@@ -69,7 +69,7 @@ return [
         |
         */
         'csv'         => [
-            'delimiter'              => ',',
+            'delimiter'              => ';',
             'enclosure'              => '"',
             'escape_character'       => '\\',
             'contiguous'             => false,

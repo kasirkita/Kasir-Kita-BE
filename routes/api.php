@@ -16,11 +16,13 @@ use Illuminate\Http\Request;
 Route::get('/check', 'Api\AuthController@check');
 Route::post('/register', 'Api\AuthController@register');
 Route::post('/login', 'Api\AuthController@login');
+Route::get('/product/template', 'Api\ProductController@template');
 
 Route::middleware(['auth:api'])->group(function(){
     Route::get('/product', 'Api\ProductController@index');
     Route::post('/product', 'Api\ProductController@store');
     Route::post('/product/import', 'Api\ProductController@import');
+    Route::get('/product/select/{id}', 'Api\ProductController@select');
     Route::delete('/product/toggle/{id}', 'Api\ProductController@toggle');
     Route::get('/product/{id}', 'Api\ProductController@show');
     Route::post('/product/{id}', 'Api\ProductController@update');

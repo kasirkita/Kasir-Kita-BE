@@ -13,6 +13,7 @@ use App\Stock;
 use App\StockDetail;
 use Excel;
 use App\Imports\ProductImport;
+use App\Exports\ProductExport;
 
 class ProductController extends Controller
 {
@@ -36,20 +37,20 @@ class ProductController extends Controller
                                         });
                                 }
 
-                                // if ($request->filter != 'all') {
-                                    // if ($request->filter == 'active') {
+                                if ($request->filter != 'all') {
+                                    if ($request->filter == 'active') {
                                         $where->whereNull('deleted_at');
-                                //     }
-                                //     if ($request->filter == 'inactive') {
-                                //         $where->whereNotNull('deleted_at');
-                                //     }
-                                //     if ($request->filter == 'selected') {
-                                //         $where->whereNull('selected');
-                                //     }
-                                //     if ($request->filter == 'unselected') {
-                                //         $where->whereNotNull('selected');
-                                //     }
-                                // }
+                                    }
+                                    if ($request->filter == 'inactive') {
+                                        $where->whereNotNull('deleted_at');
+                                    }
+                                    if ($request->filter == 'selected') {
+                                        $where->whereNotNull('selected');
+                                    }
+                                    if ($request->filter == 'unselected') {
+                                        $where->whereNull('selected');
+                                    }
+                                }
 
                             })
                             ->orderBy($ordering->type, $ordering->sort)
@@ -69,7 +70,8 @@ class ProductController extends Controller
                 'to' => $products->lastItem(),
                 'pages' => $pages,
                 'data' => $products->all()
-            ]
+            ],
+            'selected' => Product::whereNotNull('selected')->count()
         ]);
     }
 
@@ -191,28 +193,12 @@ class ProductController extends Controller
 
     public function toggle($id, Request $request)
     {
+        $product = Product::withTrashed()->where('_id', $id)->first();
 
-        
-        if ($request->active) {
-
-            $product = Product::onlyTrashed()->firstOrFail(['id' => $id]);
+        if ($product->trashed()) {
             $product->restore();
-
-            return response()->json([
-                'type' => 'success',
-                'message' => 'Data berhasil diaktifkan'
-            ], 201);
-
         } else {
-
-            $product = Product::firstOrFail(['id' => $id]);
             $product->delete();
-
-            return response()->json([
-                'type' => 'success',
-                'message' => 'Data berhasil dinonaktifkan'
-            ], 201);
-
         }
     }
 
@@ -235,12 +221,36 @@ class ProductController extends Controller
         if (!empty($request->file)) {
 
             $file = $request->file('file');
-            Excel::import(new ProductImport, $file);
+            Excel::import(new ProductImport, $file, \Maatwebsite\Excel\Excel::CSV);
         }
 
         return response()->json([
             'type' => 'success',
             'message' => 'Data berhasil diimport!'
         ], 200);
+    }
+
+    public function select($id)
+    {
+        $product = Product::withTrashed()->where('_id', $id)->first();
+
+        if (!empty($product->selected)) {
+            $product->selected = null;
+        } else {
+            $product->selected = true;
+        }
+
+        $product->save();
+
+        return response()->json([
+            'type' => 'success',
+            'selected' => Product::whereNotNull('selected')->count()
+        ], 201);
+
+    }
+
+    public function template()
+    {
+        return Excel::download(new ProductExport, 'product_template_import.csv',\Maatwebsite\Excel\Excel::CSV);
     }
 }
