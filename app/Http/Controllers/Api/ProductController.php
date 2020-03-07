@@ -14,6 +14,7 @@ use App\StockDetail;
 use Excel;
 use App\Imports\ProductImport;
 use App\Exports\ProductExport;
+use PDF;
 
 class ProductController extends Controller
 {
@@ -21,40 +22,40 @@ class ProductController extends Controller
     {
         $ordering = json_decode($request->ordering);
         $products = Product::withTrashed()
-                            ->with(['category', 'stock', 'unit'])
-                            ->where(function($where) use ($request){
+                        ->with(['category', 'stock', 'unit'])
+                        ->where(function($where) use ($request){
 
-                                if (!empty($request->keyword)) {
-                                    $where->where('name', 'like', '%'.$request->keyword.'%')
-                                        ->orWhere('code', 'like', '%'.$request->keyword.'%')
-                                        ->orWhere('description', 'like', '%'.$request->keyword.'%')
-                                        ->orWhere('price', 'like', '%'.$request->keyword.'%')
-                                        ->orWhere('cost', 'like', '%'.$request->keyword.'%')
-                                        ->orWhere('wholesale', 'like', '%'.$request->keyword.'%')
-                                        ->orWhere('picture', 'like', '%'.$request->keyword.'%')
-                                        ->orWhereHas('category', function($whereHas) use ($request){
-                                            $whereHas->where('name', 'like', $request->keyword);
-                                        });
+                            if (!empty($request->keyword)) {
+                                $where->where('name', 'like', '%'.$request->keyword.'%')
+                                    ->orWhere('code', 'like', '%'.$request->keyword.'%')
+                                    ->orWhere('description', 'like', '%'.$request->keyword.'%')
+                                    ->orWhere('price', 'like', '%'.$request->keyword.'%')
+                                    ->orWhere('cost', 'like', '%'.$request->keyword.'%')
+                                    ->orWhere('wholesale', 'like', '%'.$request->keyword.'%')
+                                    ->orWhere('picture', 'like', '%'.$request->keyword.'%')
+                                    ->orWhereHas('category', function($whereHas) use ($request){
+                                        $whereHas->where('name', 'like', $request->keyword);
+                                    });
+                            }
+
+                            if ($request->filter != 'all') {
+                                if ($request->filter == 'active') {
+                                    $where->whereNull('deleted_at');
                                 }
-
-                                if ($request->filter != 'all') {
-                                    if ($request->filter == 'active') {
-                                        $where->whereNull('deleted_at');
-                                    }
-                                    if ($request->filter == 'inactive') {
-                                        $where->whereNotNull('deleted_at');
-                                    }
-                                    if ($request->filter == 'selected') {
-                                        $where->whereNotNull('selected');
-                                    }
-                                    if ($request->filter == 'unselected') {
-                                        $where->whereNull('selected');
-                                    }
+                                if ($request->filter == 'inactive') {
+                                    $where->whereNotNull('deleted_at');
                                 }
+                                if ($request->filter == 'selected') {
+                                    $where->whereNotNull('selected');
+                                }
+                                if ($request->filter == 'unselected') {
+                                    $where->whereNull('selected');
+                                }
+                            }
 
-                            })
-                            ->orderBy($ordering->type, $ordering->sort)
-                            ->paginate((int)$request->perpage);
+                        })
+                        ->orderBy($ordering->type, $ordering->sort)
+                        ->paginate((int)$request->perpage);
 
         $pages = Pages::generate($products);
 
@@ -110,9 +111,9 @@ class ProductController extends Controller
         $product->price = $request->price;
         $product->wholesale = $request->wholesale;
         $product->category = $request->category_label;
-        $product->category_id = $category->id;
+        $product->category_id = !empty($category) ? $category->id : null;
         $product->unit = $request->unit_label;
-        $product->unit_id = $unit->id;
+        $product->unit_id = !empty($unit) ? $unit->id : null;
         $product->save();
 
         return response()->json([
@@ -158,9 +159,10 @@ class ProductController extends Controller
         $product->price = $request->price;
         $product->wholesale = $request->wholesale;
         $product->category = $request->category_label;
-        $product->category_id = $category->id;
+        $product->category_id = !empty($category) ? $category->id : null;
         $product->unit = $request->unit_label;
-        $product->unit_id = $unit->id;
+        $product->unit_id = !empty($unit) ? $unit->id : null;
+        $product->stock = $request->stock;
         $product->save();
 
 
@@ -205,7 +207,7 @@ class ProductController extends Controller
     public function destroy($id)
     {
 
-        $product = Product::withTrashed()->firstOrFail(['id', $id]);
+        $product = Product::withTrashed()->where('_id', $id)->first();
         $product->stock->details()->forceDelete();
         $product->stock()->forceDelete();
         $product->forceDelete();
@@ -252,5 +254,13 @@ class ProductController extends Controller
     public function template()
     {
         return Excel::download(new ProductExport, 'product_template_import.csv',\Maatwebsite\Excel\Excel::CSV);
+    }
+
+    public function print()
+    {
+        $data = Product::whereNotNull('selected')->get();
+        $pdf = PDF::loadView('pdf.label', ['data' => $data]);
+        return $pdf->download('label.pdf');
+        // return view('pdf.label', ['data' => $data]);
     }
 }

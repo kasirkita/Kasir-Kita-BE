@@ -1,5 +1,5 @@
 <?php
-namespace Helpers\Common;
+namespace App\Helpers;
 
 use Illuminate\Support\Str;
 use App\Category;

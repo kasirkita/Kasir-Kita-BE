@@ -51,6 +51,7 @@ class ProductImport implements ToCollection, WithHeadingRow
             $product->category_id = $category->id;
             $product->unit = $row['unit'];
             $product->unit_id = $unit->id;
+            $product->stock = $row['stock'];
             $product->save();
     
     

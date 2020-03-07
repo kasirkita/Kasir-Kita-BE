@@ -16,11 +16,12 @@ use Illuminate\Http\Request;
 Route::get('/check', 'Api\AuthController@check');
 Route::post('/register', 'Api\AuthController@register');
 Route::post('/login', 'Api\AuthController@login');
-Route::get('/product/template', 'Api\ProductController@template');
 
 Route::middleware(['auth:api'])->group(function(){
     Route::get('/product', 'Api\ProductController@index');
     Route::post('/product', 'Api\ProductController@store');
+    Route::get('/product/print', 'Api\ProductController@print');
+    Route::get('/product/template', 'Api\ProductController@template');
     Route::post('/product/import', 'Api\ProductController@import');
     Route::get('/product/select/{id}', 'Api\ProductController@select');
     Route::delete('/product/toggle/{id}', 'Api\ProductController@toggle');
@@ -28,7 +29,13 @@ Route::middleware(['auth:api'])->group(function(){
     Route::post('/product/{id}', 'Api\ProductController@update');
     Route::delete('/product/{id}', 'Api\ProductController@destroy');
 
+    Route::get('/category', 'Api\CategoryController@index');
+    Route::post('/category', 'Api\CategoryController@store');
     Route::get('/category/list', 'Api\CategoryController@list');
+    Route::delete('/category/toggle/{id}', 'Api\CategoryController@toggle');
+    Route::get('/category/{id}', 'Api\CategoryController@show');
+    Route::post('/category/{id}', 'Api\CategoryController@update');
+    Route::delete('/category/{id}', 'Api\CategoryController@destroy');
 
     Route::get('/unit/list', 'Api\UnitController@list');
 });

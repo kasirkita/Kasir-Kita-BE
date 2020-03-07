@@ -12,7 +12,18 @@ class ProductExport implements FromCollection, WithHeadings
     */
     public function collection()
     {
-        return collect([]);
+        return collect([
+            [
+                'code' => '1234567890',
+                'name' => 'Contoh Import Data',
+                'category' => 'Contoh',
+                'price' => '0',
+                'stock' => '0',
+                'unit' => 'Contoh',
+                'cost' => '0',
+                'wholesale' => '0'
+            ]
+        ]);
     }
 
     public function headings(): array
