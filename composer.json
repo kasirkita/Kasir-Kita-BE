@@ -62,8 +62,5 @@
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
         ]
-    },
-    "warmup": [
-        "php artisan config:cache"
-    ]
+    }
 }
