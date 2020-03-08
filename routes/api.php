@@ -37,5 +37,13 @@ Route::middleware(['auth:api'])->group(function(){
     Route::post('/category/{id}', 'Api\CategoryController@update');
     Route::delete('/category/{id}', 'Api\CategoryController@destroy');
 
+    Route::get('/unit', 'Api\UnitController@index');
+    Route::post('/unit', 'Api\UnitController@store');
+    Route::get('/unit/list', 'Api\UnitController@list');
+    Route::delete('/unit/toggle/{id}', 'Api\UnitController@toggle');
+    Route::get('/unit/{id}', 'Api\UnitController@show');
+    Route::post('/unit/{id}', 'Api\UnitController@update');
+    Route::delete('/unit/{id}', 'Api\UnitController@destroy');
+
     Route::get('/unit/list', 'Api\UnitController@list');
 });
