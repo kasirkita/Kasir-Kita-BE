@@ -106,6 +106,12 @@ return [
             ],
         ],
 
+        'atlas' => [
+            'driver'   => 'mongodb',
+            'dsn' => env('DB_DSN', 'mongodb+srv://admin:admin123@cluster0-ljomc.mongodb.net'),
+            'database' => env('DB_DATABASE', 'kasirkita'),
+        ]
+
     ],
 
     /*
