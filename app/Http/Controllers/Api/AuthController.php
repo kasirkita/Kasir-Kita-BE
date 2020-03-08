@@ -10,9 +10,9 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-    public function check()
+    public function check(Request $request)
     {
-        $users = User::count();
+        $users = User::where('ip_address', $request->ip())->count();
         
         if ($users > 0) {
             $user_exists = true;
@@ -37,6 +37,7 @@ class AuthController extends Controller
         $api_token = Str::random(25);
 
         $user = new User;
+        $user->ip_address = $request->ip();
         $user->name = $request->name;
         $user->email = $request->email;
         $user->password = Hash::make($request->password);
