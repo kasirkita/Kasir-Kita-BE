@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Customer;
+use App\Supplier;
 use App\Helpers\Pages;
 
-class CustomerController extends Controller
+class SupplierController extends Controller
 {
     public function list(Request $request)
     {
-        $customers = Customer::when(!empty($request->keyword), function($query) use ($request){
+        $suppliers = Supplier::when(!empty($request->keyword), function($query) use ($request){
             $query->where('name', 'like', '%'.$request->keyword.'%');
         })
         ->take(10)
@@ -19,14 +19,14 @@ class CustomerController extends Controller
 
         return response()->json([
             'type' => 'success',
-            'data' => $customers
+            'data' => $suppliers
         ], 200);
     }
 
     public function index(Request $request)
     {
         $ordering = json_decode($request->ordering);
-        $customers = Customer::withTrashed()
+        $suppliers = Supplier::withTrashed()
                         ->where(function($where) use ($request){
 
                             if (!empty($request->keyword)) {
@@ -47,20 +47,20 @@ class CustomerController extends Controller
                         ->orderBy($ordering->type, $ordering->sort)
                         ->paginate((int)$request->perpage);
 
-        $pages = Pages::generate($customers);
+        $pages = Pages::generate($suppliers);
 
         return response()->json([
             'type' => 'success',
             'message' => 'fetch data stock in success!',
             'data' => [
-                'total' => $customers->total(),
-                'per_page' => $customers->perPage(),
-                'current_page' => $customers->currentPage(),
-                'last_page' => $customers->lastPage(),
-                'from' => $customers->firstItem(),
-                'to' => $customers->lastItem(),
+                'total' => $suppliers->total(),
+                'per_page' => $suppliers->perPage(),
+                'current_page' => $suppliers->currentPage(),
+                'last_page' => $suppliers->lastPage(),
+                'from' => $suppliers->firstItem(),
+                'to' => $suppliers->lastItem(),
                 'pages' => $pages,
-                'data' => $customers->all()
+                'data' => $suppliers->all()
             ]
         ]);
     }
@@ -72,14 +72,12 @@ class CustomerController extends Controller
             'email' => 'email'
         ]);
 
-        $customer = new Customer;
-        $customer->name = $request->name;
-        $customer->email = $request->email;
-        $customer->phone_number = $request->phone_number;
-        $customer->type_name = $request->type_label;
-        $customer->type = $request->type_value;
-        $customer->address = $request->address;
-        $customer->save();
+        $supplier = new Supplier;
+        $supplier->name = $request->name;
+        $supplier->email = $request->email;
+        $supplier->phone_number = $request->phone_number;
+        $supplier->address = $request->address;
+        $supplier->save();
 
         return response()->json([
             'type' => 'success',
@@ -96,14 +94,12 @@ class CustomerController extends Controller
             'email' => 'email'
         ]);
 
-        $customer = Customer::find($id);
-        $customer->name = $request->name;
-        $customer->email = $request->email;
-        $customer->phone_number = $request->phone_number;
-        $customer->type_name = $request->type_label;
-        $customer->type = $request->type_value;
-        $customer->address = $request->address;
-        $customer->save();
+        $supplier = Supplier::find($id);
+        $supplier->name = $request->name;
+        $supplier->email = $request->email;
+        $supplier->phone_number = $request->phone_number;
+        $supplier->address = $request->address;
+        $supplier->save();
 
         return response()->json([
             'type' => 'success',
@@ -114,37 +110,37 @@ class CustomerController extends Controller
 
     public function show($id)
     {
-        $customer = Customer::findOrFail($id);
+        $supplier = Supplier::findOrFail($id);
 
         return response()->json([
             'type' => 'success',
-            'data' => $customer
+            'data' => $supplier
         ], 200);
     }
 
     public function toggle($id, Request $request)
     {
-        $customer = Customer::withTrashed()->where('_id', $id)->first();
+        $supplier = Supplier::withTrashed()->where('_id', $id)->first();
 
-        if ($customer->trashed()) {
-            $customer->restore();
+        if ($supplier->trashed()) {
+            $supplier->restore();
         } else {
-            $customer->delete();
+            $supplier->delete();
         }
     }
 
     public function destroy($id)
     {
 
-        $customer = Customer::withTrashed()->where('_id', $id)->first();
+        $supplier = Supplier::withTrashed()->where('_id', $id)->first();
         
-        if (!empty($customer->photo)) {
-            if (Storage::disk('images')->exists($customer->photo)) {
-                Storage::disk('images')->delete($customer->photo);
+        if (!empty($supplier->photo)) {
+            if (Storage::disk('images')->exists($supplier->photo)) {
+                Storage::disk('images')->delete($supplier->photo);
             }
         }
 
-        $customer->forceDelete();
+        $supplier->forceDelete();
 
         return response()->json([
             'type' => 'success',

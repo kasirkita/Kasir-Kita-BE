@@ -72,4 +72,12 @@ Route::middleware(['auth:api'])->group(function(){
     Route::post('/customer/{id}', 'Api\CustomerController@update');
     Route::delete('/customer/{id}', 'Api\CustomerController@destroy');
 
+    Route::get('/supplier', 'Api\SupplierController@index');
+    Route::post('/supplier', 'Api\SupplierController@store');
+    Route::get('/supplier/list', 'Api\SupplierController@list');
+    Route::delete('/supplier/toggle/{id}', 'Api\SupplierController@toggle');
+    Route::get('/supplier/{id}', 'Api\SupplierController@show');
+    Route::post('/supplier/{id}', 'Api\SupplierController@update');
+    Route::delete('/supplier/{id}', 'Api\SupplierController@destroy');
+
 });
