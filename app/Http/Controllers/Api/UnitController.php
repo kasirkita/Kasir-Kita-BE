@@ -28,7 +28,7 @@ class UnitController extends Controller
     public function index(Request $request)
     {
         $ordering = json_decode($request->ordering);
-        $categories = Unit::withTrashed()
+        $units = Unit::withTrashed()
                         ->where(function($where) use ($request){
 
                             if (!empty($request->keyword)) {
@@ -48,20 +48,20 @@ class UnitController extends Controller
                         ->orderBy($ordering->type, $ordering->sort)
                         ->paginate((int)$request->perpage);
 
-        $pages = Pages::generate($categories);
+        $pages = Pages::generate($units);
 
         return response()->json([
             'type' => 'success',
             'message' => 'fetch data stock in success!',
             'data' => [
-                'total' => $categories->total(),
-                'per_page' => $categories->perPage(),
-                'current_page' => $categories->currentPage(),
-                'last_page' => $categories->lastPage(),
-                'from' => $categories->firstItem(),
-                'to' => $categories->lastItem(),
+                'total' => $units->total(),
+                'per_page' => $units->perPage(),
+                'current_page' => $units->currentPage(),
+                'last_page' => $units->lastPage(),
+                'from' => $units->firstItem(),
+                'to' => $units->lastItem(),
                 'pages' => $pages,
-                'data' => $categories->all()
+                'data' => $units->all()
             ]
         ]);
     }
@@ -80,7 +80,7 @@ class UnitController extends Controller
 
         return response()->json([
             'type' => 'success',
-            'message' => 'Data berhasil diubah!'
+            'message' => 'Data berhasil disimpan!'
         ], 201);
 
     }

@@ -5,6 +5,7 @@ namespace App;
 use Jenssegers\Mongodb\Auth\User as Authenticatable;
 use Jenssegers\Mongodb\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -28,12 +29,24 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    protected $appends = ['avatar'];
+    protected $appends = ['avatar', 'date_of_birth_formatted'];
+
+    protected $dates = ['date_of_birth'];
 
     public function getAvatarAttribute()
     {
         return Storage::drive('images')->exists($this->photo) 
         ? url('storage/images/'.$this->photo) : null;
+    }
+
+    public function getDateOfBirthFormattedAttribute()
+    {
+        return Carbon::parse($this->date_of_birth)->format('F jS, Y');
+    }
+
+    public function role()
+    {
+        return $this->belongsTo('App\Role');
     }
 
 }

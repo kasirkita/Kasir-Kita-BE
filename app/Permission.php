@@ -8,4 +8,5 @@ use Jenssegers\Mongodb\Eloquent\SoftDeletes;
 class Permission extends Model
 {
     use SoftDeletes;
+    protected $fillable = ['type', 'allow'];
 }

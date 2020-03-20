@@ -18,6 +18,7 @@ Route::post('/register', 'Api\AuthController@register');
 Route::post('/login', 'Api\AuthController@login');
 
 Route::middleware(['auth:api'])->group(function(){
+
     Route::get('/product', 'Api\ProductController@index');
     Route::post('/product', 'Api\ProductController@store');
     Route::get('/product/print', 'Api\ProductController@print');
@@ -45,5 +46,22 @@ Route::middleware(['auth:api'])->group(function(){
     Route::post('/unit/{id}', 'Api\UnitController@update');
     Route::delete('/unit/{id}', 'Api\UnitController@destroy');
 
-    Route::get('/unit/list', 'Api\UnitController@list');
+    Route::get('/user', 'Api\UserController@index');
+    Route::post('/user', 'Api\UserController@store');
+    Route::get('/user/list', 'Api\UserController@list');
+    Route::delete('/user/toggle/{id}', 'Api\UserController@toggle');
+    Route::get('/user/{id}', 'Api\UserController@show');
+    Route::post('/user/{id}', 'Api\UserController@update');
+    Route::delete('/user/{id}', 'Api\UserController@destroy');
+
+    Route::get('/role', 'Api\RoleController@index');
+    Route::post('/role', 'Api\RoleController@store');
+    Route::get('/role/list', 'Api\RoleController@list');
+    Route::delete('/role/toggle/{id}', 'Api\RoleController@toggle');
+    Route::get('/role/{id}', 'Api\RoleController@show');
+    Route::post('/role/{id}', 'Api\RoleController@update');
+    Route::delete('/role/{id}', 'Api\RoleController@destroy');
+
+    Route::get('/permission/list', 'Api\PermissionController@list');
+
 });
