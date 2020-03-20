@@ -64,4 +64,12 @@ Route::middleware(['auth:api'])->group(function(){
 
     Route::get('/permission/list', 'Api\PermissionController@list');
 
+    Route::get('/customer', 'Api\CustomerController@index');
+    Route::post('/customer', 'Api\CustomerController@store');
+    Route::get('/customer/list', 'Api\CustomerController@list');
+    Route::delete('/customer/toggle/{id}', 'Api\CustomerController@toggle');
+    Route::get('/customer/{id}', 'Api\CustomerController@show');
+    Route::post('/customer/{id}', 'Api\CustomerController@update');
+    Route::delete('/customer/{id}', 'Api\CustomerController@destroy');
+
 });
