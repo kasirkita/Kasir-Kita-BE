@@ -100,6 +100,7 @@ class RoleController extends Controller
         $role->name = $request->name;
         $role->save();
 
+        $role->permissions()->delete();
         foreach ($request->permissions as $index => $permission) {
             $role->permissions()->create([
                 'type' => $index,

@@ -10,6 +10,8 @@ class Role extends Model
 {
     use SoftDeletes;
 
+    protected $fillable = ['name'];
+
     public function permissions()
     {
         return $this->embedsMany(Permission::class);

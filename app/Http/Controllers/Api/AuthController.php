@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 use App\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Permission;
+use Illuminate\Support\Facades\Artisan;
+use App\Role;
+use App\Setting;
 
 class AuthController extends Controller
 {
@@ -33,6 +37,23 @@ class AuthController extends Controller
             'email' => 'required|unique:users',
             'password' => 'required|min:6|confirmed',
         ]);
+        
+        $permissions = Permission::get();
+
+        if (!empty($permissions)) {
+            Artisan::call('fill:permission');
+        }
+
+        $role = Role::firstOrNew(['name' => 'Admin']);
+        $role->save();
+        $role->permissions()->delete();
+
+        foreach (Permission::get() as $permission) {
+            $role->permissions()->create([
+                'type' => $permission->slug,
+                'allow' => true
+            ]);
+        }
 
         $api_token = Str::random(25);
 
@@ -42,13 +63,43 @@ class AuthController extends Controller
         $user->email = $request->email;
         $user->password = Hash::make($request->password);
         $user->api_token = hash('sha256', $api_token);
+        $user->role_id = $role->id;
         $user->save();
+
+        $permissions = Permission::whereNull('parent_id')->get();
+        $permission_allowed = $permissions->map(function($permission) use ($user){
+
+        $permission_allowed = collect($user->role->permissions)->where('allow', true);
+
+        if ($permission_allowed->pluck('type')->contains($permission->slug)) {
+
+            return [
+                '_id' => $permission->id,
+                'name' => $permission->name,
+                'slug' => $permission->slug,
+                'icon' => $permission->icon,
+                'children' => $permission->children->map(function($child) use ($user){
+                    $permission_allowed = collect($user->role->permissions)->where('allow', true);
+                        if ($permission_allowed->pluck('type')->contains($child->slug)) {
+                            return [
+                                '_id' => $child->id,
+                                'name' => $child->name,
+                                'slug' => $child->slug,
+                            ];
+                        }
+                    })
+                ];
+            }
+        });
 
         return response()->json([
             'type' => 'success',
             'message' => 'Registrasi berhasil',
             'token' => $api_token,
-            'data' => $user
+            'data' => $user,
+            'permissions' => $permission_allowed->toArray(),
+            'redirect' => $user->role->permissions->where('allow', true)->first(),
+            'setting' => Setting::first()
         ], 200);
 
     }
@@ -68,12 +119,41 @@ class AuthController extends Controller
             $user->forceFill([
                 'api_token' => hash('sha256', $token)
             ])->save();
+
+            $permissions = Permission::whereNull('parent_id')->get();
+            $permission_allowed = $permissions->map(function($permission) use ($user){
+
+                $permission_allowed = collect($user->role->permissions)->where('allow', true);
+
+                if ($permission_allowed->pluck('type')->contains($permission->slug)) {
+
+                    return [
+                        '_id' => $permission->id,
+                        'name' => $permission->name,
+                        'slug' => $permission->slug,
+                        'icon' => $permission->icon,
+                        'children' => $permission->children->map(function($child) use ($user){
+                            $permission_allowed = collect($user->role->permissions)->where('allow', true);
+                            if ($permission_allowed->pluck('type')->contains($child->slug)) {
+                                return [
+                                    '_id' => $child->id,
+                                    'name' => $child->name,
+                                    'slug' => $child->slug,
+                                ];
+                            }
+                        })
+                    ];
+                }
+            });
             
             return response()->json([
                 'type' => 'success',
                 'message' => 'Login Berhasil',
                 'token' => $token,
-                'data' => $user
+                'data' => $user,
+                'permissions' => $permission_allowed->toArray(),
+                'redirect' => $user->role->permissions->where('allow', true)->first(),
+                'setting' => Setting::first()
             ], 200);
 
         }   else {

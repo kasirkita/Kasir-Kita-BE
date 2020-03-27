@@ -4,6 +4,7 @@ namespace App;
 
 use Jenssegers\Mongodb\Eloquent\Model;
 use Jenssegers\Mongodb\Eloquent\SoftDeletes;
+use App\Setting;
 
 class Product extends Model
 {
@@ -28,16 +29,23 @@ class Product extends Model
 
     public function getPriceFormattedAttribute()
     {
-        return 'Rp. '.number_format($this->price);
+        return $this->formattedValue($this->price);
     }
 
     public function getCostFormattedAttribute()
     {
-        return 'Rp. '.number_format($this->cost);
+        return $this->formattedValue($this->cost);
     }
 
     public function getWholesaleFormattedAttribute()
     {
-        return 'Rp. '.number_format($this->wholesale);
+        return $this->formattedValue($this->wholesale);
+    }
+
+    protected function formattedValue($value)
+    {
+        $setting = Setting::first();
+
+        return $setting->currency.str_replace($setting->decimal_separator.'00', '', number_format($value, 2, $setting->decimal_separator, $setting->thousand_separator));
     }
 }
