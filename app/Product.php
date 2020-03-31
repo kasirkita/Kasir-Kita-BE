@@ -11,6 +11,9 @@ class Product extends Model
     use SoftDeletes;
 
     protected $appends = ['price_formatted', 'cost_formatted', 'wholesale_formatted'];
+    protected $casts = [
+        'code' => 'string'
+    ];
 
     public function category()
     {
@@ -45,7 +48,10 @@ class Product extends Model
     protected function formattedValue($value)
     {
         $setting = Setting::first();
-
-        return $setting->currency.str_replace($setting->decimal_separator.'00', '', number_format($value, 2, $setting->decimal_separator, $setting->thousand_separator));
+        if (is_numeric($value) && floor($value) != $value) {
+            return $setting->currency.number_format($value, 2, !empty($setting->decimal_separator) ? $setting->decimal_separator : '' , !empty($setting->thousand_separator) ? $setting->thousand_separator : '');
+        } else {
+            return $setting->currency.number_format($value, 0, !empty($setting->decimal_separator) ? $setting->decimal_separator : '' , !empty($setting->thousand_separator) ? $setting->thousand_separator : '');
+        }
     }
 }

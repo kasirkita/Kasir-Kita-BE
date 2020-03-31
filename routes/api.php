@@ -100,4 +100,9 @@ Route::middleware(['auth:api'])->group(function(){
         Route::post('/setting', 'Api\SettingController@store');
     });
 
+    Route::middleware('can:cashier')->group(function(){
+        Route::get('/cashier/cart/{code}', 'Api\CashierController@cart');
+        Route::get('/cashier/search', 'Api\CashierController@search');
+    });
+
 });

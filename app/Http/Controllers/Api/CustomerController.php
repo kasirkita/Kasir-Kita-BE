@@ -15,11 +15,34 @@ class CustomerController extends Controller
             $query->where('name', 'like', '%'.$request->keyword.'%');
         })
         ->take(10)
-        ->get();
+        ->get()
+        ->groupBy('type');
+
+        $result = [];
+
+        foreach ($customers as $index => $type) {
+            
+            $options = [];
+
+            foreach ($type as $customer) {
+                $options[] = [
+                    'label' => $customer->name,
+                    'value' => $customer->id,
+                    'type' => $customer->type
+                ];
+            }
+            
+            $result[] = [
+                            'label' => $index == 'retailer' ? 'Pengecer' : 'Grosir',
+                            'options' => $options
+                        ];
+
+
+        }
 
         return response()->json([
             'type' => 'success',
-            'data' => $customers
+            'data' => $result
         ], 200);
     }
 
@@ -69,7 +92,7 @@ class CustomerController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'email' => 'email'
+            'type_value' => 'required'
         ]);
 
         $customer = new Customer;
@@ -93,7 +116,7 @@ class CustomerController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'email' => 'email'
+            'type_value' => 'required'
         ]);
 
         $customer = Customer::find($id);

@@ -42,7 +42,7 @@ class ProductImport implements ToCollection, WithHeadingRow
             }
     
             $product = new Product;
-            $product->code = $row['code'];
+            $product->code = (string)$row['code'];
             $product->name = $row['name'];
             $product->cost = $row['cost'];
             $product->price = $row['price'];
