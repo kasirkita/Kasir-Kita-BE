@@ -22,7 +22,7 @@ class ProductController extends Controller
     {
         $ordering = json_decode($request->ordering);
         $products = Product::withTrashed()
-                        ->with(['category', 'stock', 'unit'])
+                        ->with(['category', 'qty', 'unit'])
                         ->where(function($where) use ($request){
 
                             if (!empty($request->keyword)) {
@@ -168,7 +168,7 @@ class ProductController extends Controller
 
         $stock = new Stock;
         $stock->amount = $request->stock;
-        $product->stock()->save($stock);
+        $product->qty()->save($stock);
 
         $stock_detail = new StockDetail;
         $stock_detail->amount = $request->stock;
@@ -185,7 +185,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::findOrFail($id)->load(['category', 'stock', 'unit']);
+        $product = Product::findOrFail($id)->load(['category', 'qty', 'unit']);
 
         return response()->json([
             'type' => 'success',
@@ -209,7 +209,7 @@ class ProductController extends Controller
 
         $product = Product::withTrashed()->where('_id', $id)->first();
         $product->stock->details()->forceDelete();
-        $product->stock()->forceDelete();
+        $product->qty()->forceDelete();
         $product->forceDelete();
 
         return response()->json([
@@ -262,5 +262,30 @@ class ProductController extends Controller
         $pdf = PDF::loadView('pdf.label', ['data' => $data]);
         return $pdf->download('label.pdf');
         // return view('pdf.label', ['data' => $data]);
+    }
+
+    public function printThermal()
+    {
+        $data = Product::whereNotNull('selected')->get();
+        return response()->json([
+            'type' => 'success',
+            'data' => $data], 200);
+    }
+
+    public function list(Request $request)
+    {
+        $products = Product::when(!empty($request->keyword), function($query) use ($request){
+            $query->where('name', 'like', '%'.$request->keyword.'%')
+                    ->orWhere('code', 'like', '%'.$request->keyword.'%');
+        })
+        ->doesntHave('discount')
+        ->orderBy('name')
+        ->take(10)
+        ->get();
+
+        return response()->json([
+            'type' => 'success',
+            'data' => $products
+        ], 200);
     }
 }

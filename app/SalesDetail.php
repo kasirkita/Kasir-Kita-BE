@@ -6,49 +6,25 @@ use Jenssegers\Mongodb\Eloquent\Model;
 use Jenssegers\Mongodb\Eloquent\SoftDeletes;
 use App\Setting;
 
-class Product extends Model
+class SalesDetail extends Model
 {
     use SoftDeletes;
 
-    protected $appends = ['price_formatted', 'cost_formatted', 'wholesale_formatted'];
-    protected $casts = [
-        'code' => 'string'
-    ];
-    protected $fillable = ['code'];
-
-    public function category()
-    {
-        return $this->belongsTo('App\Category');
-    }
-
-    public function unit()
-    {
-        return $this->belongsTo('App\Unit');
-    }
-
-    public function qty()
-    {
-        return $this->hasOne('App\Stock');
-    }
-
-    public function discount()
-    {
-        return $this->hasOne('App\Discount');
-    }
+    protected $appends = ['price_formatted', 'discount_formatted', 'subtotal_formatted'];
 
     public function getPriceFormattedAttribute()
     {
         return $this->formattedValue($this->price);
     }
 
-    public function getCostFormattedAttribute()
+    public function getDiscountFormattedAttribute()
     {
-        return $this->formattedValue($this->cost);
+        return $this->formattedValue($this->discount);
     }
 
-    public function getWholesaleFormattedAttribute()
+    public function getSubtotalFormattedAttribute()
     {
-        return $this->formattedValue($this->wholesale);
+        return $this->formattedValue($this->subtotal);
     }
 
     protected function formattedValue($value)

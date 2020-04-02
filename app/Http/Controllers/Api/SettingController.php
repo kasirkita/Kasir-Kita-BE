@@ -57,6 +57,8 @@ class SettingController extends Controller
         $setting->currency = $request->currency;
         $setting->thousand_separator = $request->thousand_separator;
         $setting->decimal_separator = $request->decimal_separator;
+        $setting->tax = $request->tax;
+        $setting->printer = $request->printer;
         $setting->save();
 
         return response()->json([

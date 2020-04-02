@@ -9,6 +9,8 @@ class Stock extends Model
 {
     use SoftDeletes;
 
+    protected $fillable = ['product_id'];
+
     public function details()
     {
         return $this->hasMany('App\StockDetail');

@@ -41,7 +41,7 @@ class ProductImport implements ToCollection, WithHeadingRow
                 $unit->save();
             }
     
-            $product = new Product;
+            $product = Product::firstOrNew(['code' => (string)$row['code']]);
             $product->code = (string)$row['code'];
             $product->name = $row['name'];
             $product->cost = $row['cost'];
@@ -55,9 +55,9 @@ class ProductImport implements ToCollection, WithHeadingRow
             $product->save();
     
     
-            $stock = new Stock;
+            $stock = Stock::firstOrNew(['product_id' => $product->id]);
             $stock->amount = $row['stock'];
-            $product->stock()->save($stock);
+            $product->qty()->save($stock);
     
             $stock_detail = new StockDetail;
             $stock_detail->amount = $row['stock'];

@@ -6,21 +6,24 @@
     <title>Cetak Label</title>
 </head>
 <body>
-    <table style="width: 100%">
+    <table style="width: 100%; font-family: sans-serif">
     @foreach($data->chunk(3) as $chunk)
         <tr>
             @foreach($chunk as $product)
-            <td><h4 style="margin: 5px"><strong>{{ $product->price_formatted }}/{{ $product->unit->name }}</strong></h4></td>
+            <td><small><strong>{{ $product->name }}</strong></small></td>
             @endforeach
         </tr>
         <tr>
             @foreach($chunk as $product)
-            <td>{!! DNS1D::getBarcodeHTML($product->code, "EAN13") !!}</td>
+            <td><h2 style="margin: 0px">{{ $product->price_formatted }}</h2></td>
             @endforeach
         </tr>
         <tr>
             @foreach($chunk as $product)
-            <td><p style="margin: 5px; margin-bottom: 10px; font-size: .8em">{{ $product->name }}</p></td>
+            <td>
+                <div>{!! DNS1D::getBarcodeHTML($product->code, "EAN13", 1.5,33) !!}</div>
+                <div style="margin-bottom: 15px; font-size: .8em; letter-spacing: 5px"><small>{{ $product->code }}</small></div>
+            </td>
             @endforeach
         </tr>
     @endforeach
