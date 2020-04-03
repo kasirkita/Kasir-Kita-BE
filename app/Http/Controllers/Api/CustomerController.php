@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Customer;
 use App\Helpers\Pages;
+use Common;
 
 class CustomerController extends Controller
 {
@@ -39,6 +40,7 @@ class CustomerController extends Controller
 
 
         }
+
 
         return response()->json([
             'type' => 'success',

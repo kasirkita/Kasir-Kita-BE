@@ -5,6 +5,7 @@ namespace App;
 use Jenssegers\Mongodb\Eloquent\Model;
 use Jenssegers\Mongodb\Eloquent\SoftDeletes;
 use App\Setting;
+use Carbon\Carbon;
 
 class Sales extends Model
 {
@@ -16,12 +17,23 @@ class Sales extends Model
                             'total_discount_formatted',
                             'change_formatted',
                             'tax_formatted',
-                            'amount_formatted'
+                            'amount_formatted',
+                            'created_at_formatted'
                     ];
 
     public function details()
     {
         return $this->hasMany('App\SalesDetail');
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo('App\Customer');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo('App\User');
     }
 
     public function getTotalFormattedAttribute()
@@ -62,5 +74,10 @@ class Sales extends Model
         } else {
             return $setting->currency.number_format($value, 0, !empty($setting->decimal_separator) ? $setting->decimal_separator : '' , !empty($setting->thousand_separator) ? $setting->thousand_separator : '');
         }
+    }
+
+    public function getCreatedAtFormattedAttribute()
+    {
+        return Carbon::parse($this->created_at)->format('m/d/Y');
     }
 }

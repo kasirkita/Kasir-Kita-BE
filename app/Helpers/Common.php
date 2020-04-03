@@ -6,8 +6,31 @@ use App\Category;
 use App\Unit;
 use App\Permission;
 use App\Role;
+use App\Setting;
+use App\Log;
 
 class Common {
+
+    public static function formattedNumber($value) {
+        $setting = Setting::first();
+        if (is_numeric($value) && floor($value) != $value) {
+            return $setting->currency.number_format($value, 2, !empty($setting->decimal_separator) ? $setting->decimal_separator : '' , !empty($setting->thousand_separator) ? $setting->thousand_separator : '');
+        } else {
+            return $setting->currency.number_format($value, 0, !empty($setting->decimal_separator) ? $setting->decimal_separator : '' , !empty($setting->thousand_separator) ? $setting->thousand_separator : '');
+        }
+    }
+
+    public static function Log($message) {
+
+        $log = new Log;
+        $log->message = $message;
+        $log->origin = request()->headers->get('origin');
+        $log->ip = request()->server('REMOTE_ADDR');
+        $log->user_agent = request()->server('HTTP_USER_AGENT');
+        $log->save();
+
+        return true;
+    }
 
     public static function createSlug($title, $type, $id = 0)
     {

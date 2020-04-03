@@ -111,10 +111,18 @@ Route::middleware(['auth:api'])->group(function(){
     Route::middleware('can:discount')->group(function(){
         Route::get('/discount', 'Api\DiscountController@index');
         Route::post('/discount', 'Api\DiscountController@store');
+        Route::get('/discount/print', 'Api\DiscountController@print');
+        Route::get('/discount/print-thermal', 'Api\DiscountController@printThermal');
         Route::delete('/discount/toggle/{id}', 'Api\DiscountController@toggle');
+        Route::get('/discount/select/{id}', 'Api\DiscountController@select');
         Route::get('/discount/{id}', 'Api\DiscountController@show');
         Route::post('/discount/{id}', 'Api\DiscountController@update');
         Route::delete('/discount/{id}', 'Api\DiscountController@destroy');
+    });
+
+    Route::middleware('can:sales')->group(function(){
+        Route::get('/sales', 'Api\SalesController@index');
+        Route::get('/sales/{id}', 'Api\SalesController@show');
     });
 
 });

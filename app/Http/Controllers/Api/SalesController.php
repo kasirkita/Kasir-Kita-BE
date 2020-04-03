@@ -10,9 +10,58 @@ use App\Stock;
 use App\StockDetail;
 use App\Product;
 use App\Discount;
+use Carbon\Carbon;
+use App\Helpers\Pages;
 
 class SalesController extends Controller
 {
+
+    public function index(Request $request)
+    {
+        $ordering = json_decode($request->ordering);
+        $sales = Sales::withTrashed()
+                        ->with(['customer'])
+                        ->where(function($where) use ($request){
+
+                            if (!empty($request->keyword)) {
+                                $where->where('number', 'like', '%'.$request->keyword.'%')
+                                    ->orWhereHas('customer', function($query) use ($request){
+                                        $query->where('name', 'like', '%'.$request->keyword.'%');
+                                    });
+                            }
+
+                            if ($request->filter != 'all') {
+                                $where->where('status', $request->filter);
+                            }
+
+                            if (!empty($request->start_date) && !empty($request->end_date)) {
+                                $where->where('created_at', '>=', Carbon::parse($request->start_date))
+                                    ->where('created_at', '<=', Carbon::parse($request->end_date)->addDay());
+                            }
+
+                        })
+                        ->orderBy($ordering->type, $ordering->sort)
+                        ->paginate((int)$request->perpage);
+
+        $pages = Pages::generate($sales);
+
+        return response()->json([
+            'type' => 'success',
+            'message' => 'fetch data stock in success!',
+            'data' => [
+                'total' => $sales->total(),
+                'per_page' => $sales->perPage(),
+                'current_page' => $sales->currentPage(),
+                'last_page' => $sales->lastPage(),
+                'from' => $sales->firstItem(),
+                'to' => $sales->lastItem(),
+                'pages' => $pages,
+                'data' => $sales->all()
+            ],
+            'selected' => Product::whereNotNull('selected')->count()
+        ]);
+    }
+
     public function store(Request $request)
     {
         $sales = new Sales;
@@ -22,8 +71,8 @@ class SalesController extends Controller
         $sales->payment_type = $request->payment_type;
         $sales->user_id = auth()->user()->id;
         $sales->subtotal = $request->subtotal;
-        $sales->amount = $request->amount;
-        $sales->change = $request->change;
+        $sales->amount = $request->payment_type == 'cash' ? $request->amount : $request->total;
+        $sales->change = $request->payment_type == 'cash' ? $request->change : 0;
         $sales->tax = $request->tax;
         $sales->total_discount = $request->total_discount;
         $sales->total = $request->total;
@@ -42,23 +91,27 @@ class SalesController extends Controller
                 $sales_detail->discount = !empty($detail['discount_amount']) ? $detail['type'] == 'percentage' ? $detail['price'] * ($detail['discount_amount'] / 100) : $detail['discount_amount'] : 0;
                 $sales->details()->save($sales_detail);
 
-                $product = Product::find($detail['_id']);
-                $product->decrement('stock', $detail['qty']);
+                if ($request->status == 'done') {
 
-                $stock = Stock::where('product_id', $detail['_id'])->first();
-                $stock->decrement('amount', $detail['qty']);
-
-                $stock_detail = new StockDetail;
-                $stock_detail->amount = $detail['qty'];
-                $stock_detail->description = 'Penjualan '.$sales->number;
-                $stock_detail->type = '-';
-                $stock->details()->save($stock_detail);
-
-                $discount = Discount::where('product_id', $detail['_id'])->first();
-
-                if (!empty($discount) && $discount->quota > 0) {
-                    $discount->decrement('quota');
+                    $product = Product::find($detail['_id']);
+                    $product->decrement('stock', $detail['qty']);
+    
+                    $stock = Stock::where('product_id', $detail['_id'])->first();
+                    $stock->decrement('amount', $detail['qty']);
+    
+                    $stock_detail = new StockDetail;
+                    $stock_detail->amount = $detail['qty'];
+                    $stock_detail->description = 'Penjualan '.$sales->number;
+                    $stock_detail->type = '-';
+                    $stock->details()->save($stock_detail);
+    
+                    $discount = Discount::where('product_id', $detail['_id'])->first();
+    
+                    if (!empty($discount) && $discount->quota > 0) {
+                        $discount->decrement('quota');
+                    }
                 }
+
             }
         }
 
@@ -69,4 +122,27 @@ class SalesController extends Controller
         ]);
 
     }
+
+    public function show($id)
+    {
+        $sales = Sales::find($id)->load(['customer', 'user', 'details']);
+
+        return response()->json([
+            'type' => 'success',
+            'data' => $sales
+        ], 200);
+    }
+
+    public function destory($id)
+    {
+        $sales = Sales::find($id);
+        $sales->details()->forceDelete();
+        $sales->forceDelete();
+
+        return response()->json([
+            'type' => 'success',
+            'message' => 'Data berhasil dihapus'
+        ]);
+    }
+
 }

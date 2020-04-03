@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Discount;
 use App\Helpers\Pages;
+use App\Helpers\Common;
+use PDF;
 
 class DiscountController extends Controller
 {
@@ -25,6 +27,12 @@ class DiscountController extends Controller
                                 }
                                 if ($request->filter == 'inactive') {
                                     $where->whereNotNull('deleted_at');
+                                }
+                                if ($request->filter == 'selected') {
+                                    $where->whereNotNull('selected');
+                                }
+                                if ($request->filter == 'unselected') {
+                                    $where->whereNull('selected');
                                 }
                             }
 
@@ -46,7 +54,8 @@ class DiscountController extends Controller
                 'to' => $discounts->lastItem(),
                 'pages' => $pages,
                 'data' => $discounts->all()
-            ]
+            ],
+            'selected' => Discount::whereNotNull('selected')->count()
         ]);
     }
 
@@ -142,5 +151,54 @@ class DiscountController extends Controller
             'type' => 'success',
             'message' => 'Data berhasil dihapus!'
         ], 200);
+    }
+
+    public function select($id)
+    {
+        $discount = Discount::withTrashed()->where('_id', $id)->first();
+
+        if (!empty($discount->selected)) {
+            $discount->selected = null;
+        } else {
+            $discount->selected = true;
+        }
+
+        $discount->save();
+
+        return response()->json([
+            'type' => 'success',
+            'selected' => Discount::whereNotNull('selected')->count()
+        ], 201);
+
+    }
+
+    public function print()
+    {
+        $data = Discount::whereNotNull('selected')->get();
+        $pdf = PDF::loadView('pdf.label_discount', ['data' => $data->load('product')]);
+        return $pdf->download('label_discount.pdf');
+        // return view('pdf.label', ['data' => $data]);
+    }
+
+    public function printThermal()
+    {
+        $data = Discount::with(['product'])->whereNotNull('selected')->get();
+        $new_data = $data->map(function($item) {
+            $term =  $item->term == '>' ? 'lebih dari ' : '';
+            $unit =  $item->product->unit ? $item->product->unit->name : '';
+
+            return [
+                'name' => $item->product->name,
+                'tnc' => 'Setiap pembelian ' .  $term . $item->total_qty . $unit,
+                'valid_thru_formatted' => $item->valid_thru_formatted,
+                'price' => $item->product->price_formatted,
+                'customer_type' => $item->customer_type,
+                'discount' => Common::formattedNumber($item->type == 'fix' ? $item->product->price - $item->amount : $item->product->price  - ($item->product->price * ($item->amount / 100))),
+            ];
+        });
+
+        return response()->json([
+            'type' => 'success',
+            'data' => $new_data], 200);
     }
 }
