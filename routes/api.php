@@ -123,6 +123,14 @@ Route::middleware(['auth:api'])->group(function(){
     Route::middleware('can:sales')->group(function(){
         Route::get('/sales', 'Api\SalesController@index');
         Route::get('/sales/{id}', 'Api\SalesController@show');
+        Route::delete('/sales/{id}', 'Api\SalesController@destroy');
+    });
+
+    Route::middleware('can:purchase')->group(function(){
+        Route::get('/purchase', 'Api\PurchaseController@index');
+        Route::post('/purchase', 'Api\PurchaseController@store');
+        Route::get('/purchase/{id}', 'Api\PurchaseController@show');
+        Route::delete('/purchase/{id}', 'Api\PurchaseController@destroy');
     });
 
 });

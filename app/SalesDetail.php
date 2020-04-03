@@ -12,6 +12,11 @@ class SalesDetail extends Model
 
     protected $appends = ['price_formatted', 'discount_formatted', 'subtotal_formatted'];
 
+    public function product()
+    {
+        return $this->belongsTo('App\Product');
+    }
+
     public function getPriceFormattedAttribute()
     {
         return $this->formattedValue($this->price);

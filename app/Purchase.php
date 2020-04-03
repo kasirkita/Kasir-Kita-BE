@@ -4,36 +4,39 @@ namespace App;
 
 use Jenssegers\Mongodb\Eloquent\Model;
 use Jenssegers\Mongodb\Eloquent\SoftDeletes;
-use App\Setting;
 use Carbon\Carbon;
+use App\Setting;
 
-class Sales extends Model
+class Purchase extends Model
 {
     use SoftDeletes;
-
+    protected $dates = ['payment_date'];
     protected $appends = [
-                            'total_formatted',
-                            'subtotal_formatted',
-                            'total_discount_formatted',
-                            'change_formatted',
-                            'tax_formatted',
-                            'amount_formatted',
-                            'created_at_formatted'
-                    ];
-    protected $fillable = ['number'];
+        'total_formatted',
+        'subtotal_formatted',
+        'total_discount_formatted',
+        'tax_formatted',
+        'payment_date_formatted'
+    ];
+
     public function details()
     {
-        return $this->hasMany('App\SalesDetail');
+        return $this->hasMany('App\PurchaseDetail');
     }
 
-    public function customer()
+    public function supplier()
     {
-        return $this->belongsTo('App\Customer');
+        return $this->belongsTo('App\Supplier');
     }
 
     public function user()
     {
         return $this->belongsTo('App\User');
+    }
+
+    public function in_charge()
+    {
+        return $this->belongsTo('App\User', 'in_charge_id');
     }
 
     public function getTotalFormattedAttribute()
@@ -51,19 +54,9 @@ class Sales extends Model
         return $this->formattedValue($this->total_discount);
     }
 
-    public function getChangeFormattedAttribute()
-    {
-        return $this->formattedValue($this->change);
-    }
-
     public function getTaxFormattedAttribute()
     {
         return $this->formattedValue($this->tax);
-    }
-
-    public function getAmountFormattedAttribute()
-    {
-        return $this->formattedValue($this->amount);
     }
 
     protected function formattedValue($value)
@@ -76,8 +69,8 @@ class Sales extends Model
         }
     }
 
-    public function getCreatedAtFormattedAttribute()
+    public function getPaymentDateFormattedAttribute()
     {
-        return Carbon::parse($this->created_at)->format('m/d/Y');
+        return Carbon::parse($this->payment_date)->format('m/d/Y');
     }
 }

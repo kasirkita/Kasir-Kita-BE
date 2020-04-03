@@ -68,8 +68,7 @@ class SupplierController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'email' => 'email'
+            'name' => 'required'
         ]);
 
         $supplier = new Supplier;
@@ -90,8 +89,7 @@ class SupplierController extends Controller
     public function update($id, Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'email' => 'email'
+            'name' => 'required'
         ]);
 
         $supplier = Supplier::find($id);
@@ -133,13 +131,6 @@ class SupplierController extends Controller
     {
 
         $supplier = Supplier::withTrashed()->where('_id', $id)->first();
-        
-        if (!empty($supplier->photo)) {
-            if (Storage::disk('images')->exists($supplier->photo)) {
-                Storage::disk('images')->delete($supplier->photo);
-            }
-        }
-
         $supplier->forceDelete();
 
         return response()->json([
