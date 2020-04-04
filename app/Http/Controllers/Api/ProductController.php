@@ -174,7 +174,7 @@ class ProductController extends Controller
         $stock_detail->amount = (float)$request->stock;
         $stock_detail->description = 'Stok awal';
         $stock_detail->type = '+';
-        $stock_details->user_id = auth()->user()->id;
+        $stock_detail->user_id = auth()->user()->id;
         $stock->details()->save($stock_detail);
 
         return response()->json([

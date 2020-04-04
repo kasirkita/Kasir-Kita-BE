@@ -90,14 +90,17 @@ class SalesController extends Controller
         if (!empty($request->details)) {
             foreach ($request->details as $detail) {
 
+                $discount = !empty($detail['discount_amount']) ? $detail['type'] == 'percentage' ? $detail['price'] * ($detail['discount_amount'] / 100) : $detail['discount_amount'] : 0;
+                $subtotal = $request->customer_type === 'wholesaler' ? $detail['wholesale'] * $detail['qty'] : $detail['price'] * $detail['qty'];
                 $sales_detail = new SalesDetail;
                 $sales_detail->product_id = $detail['_id'];
                 $sales_detail->product_name = $detail['name'];
                 $sales_detail->cost = $detail['cost'];
                 $sales_detail->price = $request->customer_type === 'wholesaler' ? $detail['wholesale'] : $detail['price'];
                 $sales_detail->qty = $detail['qty'];
-                $sales_detail->subtotal = $request->customer_type === 'wholesaler' ? $detail['wholesale'] * $detail['qty'] : $detail['price'] * $detail['qty'];
-                $sales_detail->discount = !empty($detail['discount_amount']) ? $detail['type'] == 'percentage' ? $detail['price'] * ($detail['discount_amount'] / 100) : $detail['discount_amount'] : 0;
+                $sales_detail->subtotal = $subtotal;
+                $sales_detail->discount = $discount;
+                $sales_detail->total = ($subtotal - $discount);
                 $sales->details()->save($sales_detail);
 
                 if ($request->status == 'done') {
@@ -112,7 +115,7 @@ class SalesController extends Controller
                     $stock_detail->amount = $detail['qty'];
                     $stock_detail->description = 'Penjualan '.$sales->number;
                     $stock_detail->type = '-';
-                    $stock_details->user_id = auth()->user()->id;
+                    $stock_detail->user_id = auth()->user()->id;
                     $stock->details()->save($stock_detail);
     
                     $discount = Discount::where('product_id', $detail['_id'])->first();

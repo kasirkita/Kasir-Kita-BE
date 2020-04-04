@@ -16,6 +16,11 @@ class PurchaseDetail extends Model
         'subtotal_formatted'
     ];
 
+    public function purchase()
+    {
+        return $this->belongsTo('App\Purchase');
+    }
+
     public function getPriceFormattedAttribute()
     {
         return $this->formattedValue($this->price);

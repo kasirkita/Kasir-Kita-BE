@@ -72,12 +72,12 @@ class StockController extends Controller
             $amount = $request->real_stock - $stock->amount;
         }
 
-        $stock->amount = $request->real_stock;
+        $stock->amount = (float)$request->real_stock;
         $stock->save();
 
         $stock_details = new StockDetail;
         $stock_details->type = $type;
-        $stock_details->amount = $amount;
+        $stock_details->amount = (float)$amount;
         $stock_details->description = $request->description;
         $stock_details->user_id = auth()->user()->id;
         $stock->details()->save($stock_details);

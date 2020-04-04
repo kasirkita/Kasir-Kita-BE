@@ -146,4 +146,13 @@ Route::middleware(['auth:api'])->group(function(){
         Route::post('/stock', 'Api\StockController@store');
     });
 
+    Route::middleware('can:stock')->group(function(){
+        Route::get('/report-sales', 'Api\ReportController@sales');
+        Route::get('/report-sales/print/{type}', 'Api\ReportController@printSales');
+        Route::get('/report-purchase', 'Api\ReportController@purchase');
+        Route::get('/report-purchase/print/{type}', 'Api\ReportController@printPurchase');
+        Route::get('/report-expense', 'Api\ReportController@expense');
+        Route::get('/report-expense/print/{type}', 'Api\ReportController@printExpense');
+    });
+
 });
