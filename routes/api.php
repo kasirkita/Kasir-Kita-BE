@@ -141,4 +141,9 @@ Route::middleware(['auth:api'])->group(function(){
         Route::delete('/expense/{id}', 'Api\ExpenseController@destroy');
     });
 
+    Route::middleware('can:stock')->group(function(){
+        Route::get('/stock', 'Api\StockController@index');
+        Route::post('/stock', 'Api\StockController@store');
+    });
+
 });

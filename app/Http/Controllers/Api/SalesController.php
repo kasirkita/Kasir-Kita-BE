@@ -112,6 +112,7 @@ class SalesController extends Controller
                     $stock_detail->amount = $detail['qty'];
                     $stock_detail->description = 'Penjualan '.$sales->number;
                     $stock_detail->type = '-';
+                    $stock_details->user_id = auth()->user()->id;
                     $stock->details()->save($stock_detail);
     
                     $discount = Discount::where('product_id', $detail['_id'])->first();
