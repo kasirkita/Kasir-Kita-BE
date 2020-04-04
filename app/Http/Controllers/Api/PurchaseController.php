@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use App\Product;
 use App\Stock;
 use App\StockDetail;
+use Illuminate\Support\Facades\Storage;
 
 class PurchaseController extends Controller
 {
@@ -27,7 +28,7 @@ class PurchaseController extends Controller
 
                             if (!empty($request->payment_date_start) && !empty($request->payment_date_end)) {
                                 $where->where('payment_date', '>=', Carbon::parse($request->payment_date_start))
-                                    ->where('payment_date', '<=', Carbon::parse($request->payment_date_end)->addDay());
+                                    ->where('payment_date', '<=', Carbon::parse($request->payment_date_end));
                             }
 
                         })
@@ -68,9 +69,10 @@ class PurchaseController extends Controller
         $purchase->in_charge_name = $request->in_charge_name;
         $purchase->user_id = auth()->user()->id;
         $purchase->notes = $request->notes;
-        $purchase->tax = $request->tax;
-        $purchase->total_discount = $request->total_discount;
-        $purchase->total = $request->total;
+        $purchase->subtotal = (float)$request->subtotal;
+        $purchase->tax = (float)$request->tax;
+        $purchase->total_discount = (float)$request->total_discount;
+        $purchase->total = (float)$request->total;
 
         if (!empty($request->file('evidence'))) {
 
@@ -90,6 +92,8 @@ class PurchaseController extends Controller
                 $purchase_detail->product_id = $detail->_id;
                 $purchase_detail->product_name = $detail->name;
                 $purchase_detail->cost = $detail->cost;
+                $purchase_detail->price = $detail->price;
+                $purchase_detail->wholesale = $detail->wholesale;
                 $purchase_detail->qty = $detail->qty;
                 $purchase_detail->subtotal = $detail->cost * $detail->qty;
                 $purchase->details()->save($purchase_detail);
@@ -125,7 +129,7 @@ class PurchaseController extends Controller
 
         return response()->json([
             'type' => 'success',
-            'data' => $purchase
+            'data' => $purchase->load(['details', 'in_charge', 'user', 'supplier'])
         ], 200);
     }
 
@@ -135,8 +139,8 @@ class PurchaseController extends Controller
         $purchase = Purchase::withTrashed()->where('_id', $id)->first();
         
         if (!empty($purchase->evidence)) {
-            if (Storage::disk('document')->exists($purchase->evidence)) {
-                Storage::disk('document')->delete($purchase->evidence);
+            if (Storage::disk('documents')->exists($purchase->evidence)) {
+                Storage::disk('documents')->delete($purchase->evidence);
             }
         }
 

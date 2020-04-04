@@ -162,16 +162,16 @@ class ProductController extends Controller
         $product->category_id = !empty($category) ? $category->id : null;
         $product->unit = $request->unit_label;
         $product->unit_id = !empty($unit) ? $unit->id : null;
-        $product->stock = $request->stock;
+        $product->stock = (float)$request->stock;
         $product->save();
 
 
         $stock = new Stock;
-        $stock->amount = $request->stock;
+        $stock->amount = (float)$request->stock;
         $product->qty()->save($stock);
 
         $stock_detail = new StockDetail;
-        $stock_detail->amount = $request->stock;
+        $stock_detail->amount = (float)$request->stock;
         $stock_detail->description = 'Stok awal';
         $stock_detail->type = '+';
         $stock->details()->save($stock_detail);

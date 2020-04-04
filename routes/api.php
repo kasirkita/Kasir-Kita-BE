@@ -133,4 +133,12 @@ Route::middleware(['auth:api'])->group(function(){
         Route::delete('/purchase/{id}', 'Api\PurchaseController@destroy');
     });
 
+    Route::middleware('can:expense')->group(function(){
+        Route::get('/expense', 'Api\ExpenseController@index');
+        Route::post('/expense', 'Api\ExpenseController@store');
+        Route::get('/expense/{id}', 'Api\ExpenseController@show');
+        Route::post('/expense/{id}', 'Api\ExpenseController@update');
+        Route::delete('/expense/{id}', 'Api\ExpenseController@destroy');
+    });
+
 });

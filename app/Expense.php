@@ -4,32 +4,19 @@ namespace App;
 
 use Jenssegers\Mongodb\Eloquent\Model;
 use Jenssegers\Mongodb\Eloquent\SoftDeletes;
-use Carbon\Carbon;
-use App\Setting;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
-class Purchase extends Model
+class Expense extends Model
 {
     use SoftDeletes;
     protected $dates = ['payment_date'];
     protected $appends = [
         'total_formatted',
-        'subtotal_formatted',
-        'total_discount_formatted',
-        'tax_formatted',
+        'price_formatted',
         'payment_date_formatted',
         'evidence_url'
     ];
-
-    public function details()
-    {
-        return $this->hasMany('App\PurchaseDetail');
-    }
-
-    public function supplier()
-    {
-        return $this->belongsTo('App\Supplier');
-    }
 
     public function user()
     {
@@ -46,19 +33,9 @@ class Purchase extends Model
         return $this->formattedValue($this->total);
     }
 
-    public function getSubTotalFormattedAttribute()
+    public function getPriceFormattedAttribute()
     {
-        return $this->formattedValue($this->subtotal);
-    }
-
-    public function getTotalDiscountFormattedAttribute()
-    {
-        return $this->formattedValue($this->total_discount);
-    }
-
-    public function getTaxFormattedAttribute()
-    {
-        return $this->formattedValue($this->tax);
+        return $this->formattedValue($this->price);
     }
 
     protected function formattedValue($value)
@@ -81,4 +58,5 @@ class Purchase extends Model
         return Storage::drive('documents')->exists($this->evidence) 
         ? url('storage/documents/'.$this->evidence) : null;
     }
+
 }
