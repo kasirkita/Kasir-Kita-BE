@@ -14,7 +14,9 @@ use Excel;
 use App\Exports\ReportSalesExport;
 use App\Exports\ReportPurchaseExport;
 use App\Exports\ReportExpenseExport;
+use App\Exports\ReportStockExport;
 use App\Expense;
+use App\StockDetail;
 
 class ReportController extends Controller
 {
@@ -173,7 +175,6 @@ class ReportController extends Controller
 
     }
 
-
     public function expense(Request $request)
     {
         $ordering = json_decode($request->ordering);
@@ -244,6 +245,81 @@ class ReportController extends Controller
             return $pdf->download('report-expense.pdf');
         } else {
             return Excel::download(new ReportExpenseExport($data), 'report expense.xlsx');
+        }
+
+    }
+
+    public function stock(Request $request)
+    {
+        $ordering = json_decode($request->ordering);
+        $stock = StockDetail::with(['stock.product', 'user'])
+                            ->where(function($where) use ($request){
+
+                            if (!empty($request->keyword)) {
+                                $where->whereHas('stock.product', function($query) use($request){
+                                    $query->where('name', 'like', '%'.$request->keyword.'%');
+                                });
+                            }
+
+                            if (!empty($request->start_date) && !empty($request->end_date)) {
+                                $where->where('created_at', '>=', Carbon::parse($request->start_date))
+                                    ->where('created_at', '<=', Carbon::parse($request->end_date)->addDay());
+                            }
+
+                        })
+                        ->orderBy($ordering->type, $ordering->sort)
+                        ->paginate((int)$request->perpage);
+
+        $pages = Pages::generate($stock);
+
+        return response()->json([
+            'type' => 'success',
+            'message' => 'fetch data stock in success!',
+            'data' => [
+                'total' => $stock->total(),
+                'per_page' => $stock->perPage(),
+                'current_page' => $stock->currentPage(),
+                'last_page' => $stock->lastPage(),
+                'from' => $stock->firstItem(),
+                'to' => $stock->lastItem(),
+                'pages' => $pages,
+                'data' => $stock->all()
+            ]
+        ]);
+    }
+
+    public function printStock($type, Request $request)
+    {
+
+        $stocks = StockDetail::with(['stock.product', 'user'])->where(function($where) use ($request){
+
+            if (!empty($request->keyword)) {
+                $where->whereHas('stock.product', function($query) use($request){
+                    $query->where('name', 'like', '%'.$request->keyword.'%');
+                });
+            }
+
+            if (!empty($request->start_date) && !empty($request->end_date)) {
+                $where->where('created_at', '>=', Carbon::parse($request->start_date))
+                    ->where('created_at', '<=', Carbon::parse($request->end_date)->addDay());
+            }
+
+        })
+        ->orderBy('created_at', 'asc')
+        ->orderBy('product_name', 'asc')
+        ->get();
+
+        $data = [
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'stocks' => $stocks,
+        ];
+
+        if ($type == 'pdf') {
+            $pdf = PDF::loadView('pdf.report_stock_pdf', $data);
+            return $pdf->download('report-stock.pdf');
+        } else {
+            return Excel::download(new ReportStockExport($data), 'report stock.xlsx');
         }
 
     }

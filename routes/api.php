@@ -153,6 +153,8 @@ Route::middleware(['auth:api'])->group(function(){
         Route::get('/report-purchase/print/{type}', 'Api\ReportController@printPurchase');
         Route::get('/report-expense', 'Api\ReportController@expense');
         Route::get('/report-expense/print/{type}', 'Api\ReportController@printExpense');
+        Route::get('/report-stock', 'Api\ReportController@stock');
+        Route::get('/report-stock/print/{type}', 'Api\ReportController@printStock');
     });
 
 });
