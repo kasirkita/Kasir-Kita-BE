@@ -40,6 +40,15 @@ class FillSetting extends Command
     {
         $setting = new Setting;
         $setting->name = 'Kasir Kita';
+        $setting->address = '';
+        $setting->thousand_separator = '.';
+        $setting->decimal_separator = ',';
+        $setting->logo_remove = '';
+        $setting->phone_number = '';
+        $setting->divider = '';
+        $setting->currency = '';
+        $setting->tax = 0;
+        $setting->printer = 'http://localhost:4000';
         $setting->save();
     }
 }
