@@ -39,9 +39,14 @@ class AuthController extends Controller
         ]);
         
         $permissions = Permission::get();
+        $setting = Setting::get();
 
         if (!empty($permissions)) {
             Artisan::call('fill:permission');
+        }
+
+        if (!empty($setting)) {
+            Artisan::call('fill:setting');
         }
 
         $role = Role::firstOrNew(['name' => 'Admin']);
