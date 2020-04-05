@@ -8,7 +8,7 @@ Kasir Kita Backend, aplikasi POS gratis dibuat menggunakan Laravel
 
 ## Cara menginstall
 
-### Step 1 Menginstall Package dan Mengatur URL
+### Step 1 Menginstall Package
 Silahkan clone repository ini, atau download, setelah itu gunakan perintah `composer update`. 
 
 ### Step 2 Mengatur .env
