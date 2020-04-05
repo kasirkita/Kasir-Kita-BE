@@ -16,7 +16,8 @@ class AuthController extends Controller
 {
     public function check(Request $request)
     {
-        $users = User::where('ip_address', $request->ip())->count();
+        // $users = User::where('ip_address', $request->ip())->count();
+        $users = User::count();
         
         if ($users > 0) {
             $user_exists = true;
