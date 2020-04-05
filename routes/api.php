@@ -157,4 +157,12 @@ Route::middleware(['auth:api'])->group(function(){
         Route::get('/report-stock/print/{type}', 'Api\ReportController@printStock');
     });
 
+
+    Route::middleware('can:dashboard')->group(function(){
+        Route::get('/dashboard', 'Api\DashboardController@index');
+        Route::get('/dashboard/best-seller', 'Api\DashboardController@getBestSeller');
+        Route::get('/dashboard/almost-out', 'Api\DashboardController@getAlmostOutOfStock');
+        Route::get('/dashboard/chart', 'Api\DashboardController@getChart');
+    });
+
 });

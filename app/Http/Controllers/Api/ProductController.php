@@ -279,7 +279,11 @@ class ProductController extends Controller
             $query->where('name', 'like', '%'.$request->keyword.'%')
                     ->orWhere('code', 'like', '%'.$request->keyword.'%');
         })
-        ->doesntHave('discount')
+        ->when($request->discount, function($query) use ($request){
+            if ($request->discount) {
+                $query->doesntHave('discount');
+            }
+        })
         ->orderBy('name')
         ->take(10)
         ->get();

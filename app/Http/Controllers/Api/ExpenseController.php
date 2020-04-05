@@ -154,7 +154,6 @@ class ExpenseController extends Controller
             }
         }
 
-        $expense->details()->forceDelete();
         $expense->forceDelete();
 
         return response()->json([

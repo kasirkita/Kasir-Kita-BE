@@ -36,6 +36,11 @@ class Product extends Model
         return $this->hasOne('App\Discount');
     }
 
+    public function sales_details()
+    {
+        return $this->hasMany('App\SalesDetail')->groupBy('qty');
+    }
+
     public function getPriceFormattedAttribute()
     {
         return $this->formattedValue($this->price);
