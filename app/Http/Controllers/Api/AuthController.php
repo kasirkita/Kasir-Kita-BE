@@ -68,7 +68,8 @@ class AuthController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->password = Hash::make($request->password);
-        $user->api_token = hash('sha256', $api_token);
+        // $user->api_token = hash('sha256', $api_token);
+        $user->api_token = $api_token;
         $user->role_id = $role->id;
         $user->save();
 
@@ -117,14 +118,14 @@ class AuthController extends Controller
             'password' => 'required|min:6'
         ]);
         
-        $token = Str::random(25);
+        // $token = Str::random(25);
         $user = User::where('email', $request->email)->first();
         
         if (Hash::check($request->password, $user->password)) {
             
-            $user->forceFill([
-                'api_token' => hash('sha256', $token)
-            ])->save();
+            // $user->forceFill([
+            //     'api_token' => hash('sha256', $token)
+            // ])->save();
 
             $permissions = Permission::whereNull('parent_id')->get();
             $permission_allowed = $permissions->map(function($permission) use ($user){
@@ -155,7 +156,7 @@ class AuthController extends Controller
             return response()->json([
                 'type' => 'success',
                 'message' => 'Login Berhasil',
-                'token' => $token,
+                'token' => $user->api_token,
                 'data' => $user,
                 'permissions' => $permission_allowed->toArray(),
                 'redirect' => $user->role->permissions->where('allow', true)->first(),
