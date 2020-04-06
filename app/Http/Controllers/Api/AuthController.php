@@ -118,7 +118,7 @@ class AuthController extends Controller
             'password' => 'required|min:6'
         ]);
         
-        // $token = Str::random(25);
+        $token = Str::random(25);
         $user = User::where('email', $request->email)->first();
         
         if (Hash::check($request->password, $user->password)) {

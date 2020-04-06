@@ -11,6 +11,6 @@ class Setting extends Model
 
     public function getLogoUrlAttribute()
     {
-        return !empty($this->logo) && Storage::disk('images')->exists($this->logo) ? url('storage/images/'.$this->logo) : url('storage/images/default.png');
+        return !empty($this->logo) && Storage::disk('images')->exists($this->logo) ? url('storage/images/'.$this->logo) : url('default.png');
     }
 }
