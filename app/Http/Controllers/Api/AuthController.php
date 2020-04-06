@@ -123,9 +123,13 @@ class AuthController extends Controller
         
         if (Hash::check($request->password, $user->password)) {
             
-            // $user->forceFill([
-            //     'api_token' => hash('sha256', $token)
-            // ])->save();
+            
+            if (empty($user->api_token)) {
+                
+                $user->forceFill([
+                    'api_token' => hash('sha256', $token)
+                ])->save();
+            }
 
             $permissions = Permission::whereNull('parent_id')->get();
             $permission_allowed = $permissions->map(function($permission) use ($user){

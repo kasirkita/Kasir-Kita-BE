@@ -82,6 +82,7 @@ class UserController extends Controller
         ]);
 
         $user = new User;
+        $user->ip_address = $request->ip();
         $user->name = $request->name;
         $user->password = Hash::make($request->password);
         $user->email = $request->email;
