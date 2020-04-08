@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::get('/test', 'Api\AuthController@setUrl');
+
 Route::get('/check', 'Api\AuthController@check');
 Route::post('/register', 'Api\AuthController@register');
 Route::post('/login', 'Api\AuthController@login');

@@ -179,4 +179,12 @@ class AuthController extends Controller
             ], 422);
         }
     }
+
+    public function setUrl()
+    {
+        return response()->json([
+            'type' => 'success',
+            'message' => 'Berhasil terhubung'
+        ]);
+    }
 }
