@@ -98,21 +98,23 @@ class PurchaseController extends Controller
                 $purchase_detail->subtotal = $detail->cost * $detail->qty;
                 $purchase->details()->save($purchase_detail);
     
-                $product = Product::find($detail->_id);
-                $product->price = $detail->price;
-                $product->wholesale = $detail->wholesale;
-                $product->cost = $detail->cost;
-                $product->save();
-    
+                
                 $stock = Stock::where('product_id', $detail->_id)->first();
-                $stock->increment('amount', $detail->qty);
-    
+                $stock->increment('amount', (float)$detail->qty);
+                
                 $stock_detail = new StockDetail;
-                $stock_detail->amount = $detail->qty;
+                $stock_detail->amount = (float)$detail->qty;
                 $stock_detail->description = 'Pembelian '.$purchase->number;
                 $stock_detail->type = '+';
                 $stock_detail->user_id = auth()->user()->id;
                 $stock->details()->save($stock_detail);
+
+                $product = Product::find($detail->_id);
+                $product->price = $detail->price;
+                $product->wholesale = $detail->wholesale;
+                $product->cost = $detail->cost;
+                $product->stock = (float) $stock->amount;
+                $product->save();
             }
 
         }
