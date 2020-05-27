@@ -92,13 +92,17 @@ class SalesController extends Controller
 
                 $unit = collect($request->units)->firstWhere('cart_id', $detail['_id']);
 
-                $discount = !empty($detail['discount_amount']) ? $detail['type'] == 'percentage' ? $detail['price'] * ($detail['discount_amount'] / 100) : $detail['discount_amount'] : 0;
-                $subtotal = $request->customer_type === 'wholesaler' ? $detail['wholesale'] * $detail['qty'] : $detail['price'] * $detail['qty'];
+                $fix_price = $request->customer_type == 'wholesaler' ? $detail['wholesale'] : $detail['price'];
+                $price = !empty($unit) ? $request->customer_type == 'wholesaler' ? $unit['wholesale'] : $unit['price'] : $fix_price;
+                
+
+                $discount = !empty($detail['discount_amount']) ? $detail['type'] == 'percentage' ? $price * ($detail['discount_amount'] / 100) : $detail['discount_amount'] : 0;
+                $subtotal = $price * $detail['qty'];
                 $sales_detail = new SalesDetail;
                 $sales_detail->product_id = $detail['_id'];
                 $sales_detail->product_name = $detail['name'];
                 $sales_detail->cost = $detail['cost'];
-                $sales_detail->price = $request->customer_type === 'wholesaler' ? $detail['wholesale'] : $detail['price'];
+                $sales_detail->price =  $price;
                 $sales_detail->qty = $detail['qty'];
                 $sales_detail->unit_id = !empty($unit) ? $unit['unit_id'] : $detail['unit_id'];
                 $sales_detail->unit_name = !empty($unit) ? $unit['unit_name'] : $detail['unit_name'];
