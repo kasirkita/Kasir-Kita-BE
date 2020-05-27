@@ -90,6 +90,8 @@ class SalesController extends Controller
         if (!empty($request->details)) {
             foreach ($request->details as $detail) {
 
+                $unit = collect($request->units)->firstWhere('cart_id', $detail['_id']);
+
                 $discount = !empty($detail['discount_amount']) ? $detail['type'] == 'percentage' ? $detail['price'] * ($detail['discount_amount'] / 100) : $detail['discount_amount'] : 0;
                 $subtotal = $request->customer_type === 'wholesaler' ? $detail['wholesale'] * $detail['qty'] : $detail['price'] * $detail['qty'];
                 $sales_detail = new SalesDetail;
@@ -98,6 +100,8 @@ class SalesController extends Controller
                 $sales_detail->cost = $detail['cost'];
                 $sales_detail->price = $request->customer_type === 'wholesaler' ? $detail['wholesale'] : $detail['price'];
                 $sales_detail->qty = $detail['qty'];
+                $sales_detail->unit_id = !empty($unit) ? $unit['unit_id'] : $detail['unit_id'];
+                $sales_detail->unit_name = !empty($unit) ? $unit['unit_name'] : $detail['unit_name'];
                 $sales_detail->subtotal = $subtotal;
                 $sales_detail->discount = $discount;
                 $sales_detail->total = ($subtotal - $discount);
@@ -105,14 +109,17 @@ class SalesController extends Controller
 
                 if ($request->status == 'done') {
 
+                    $qty = !empty($unit) ? (int)($unit['convertion'] * $detail['qty']) : $detail['qty'];
+
                     $product = Product::find($detail['_id']);
-                    $product->decrement('stock', $detail['qty']);
+                    $product->decrement('stock', $qty);
+                    
     
                     $stock = Stock::where('product_id', $detail['_id'])->first();
-                    $stock->decrement('amount', $detail['qty']);
+                    $stock->decrement('amount', $qty);
     
                     $stock_detail = new StockDetail;
-                    $stock_detail->amount = $detail['qty'];
+                    $stock_detail->amount = $qty;
                     $stock_detail->description = 'Penjualan '.$sales->number;
                     $stock_detail->type = '-';
                     $stock_detail->user_id = auth()->user()->id;

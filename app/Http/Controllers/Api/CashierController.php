@@ -12,7 +12,7 @@ class CashierController extends Controller
 {
     public function cart($code)
     {
-        $product = Product::where('code', $code)->first();
+        $product = Product::with(['units'])->where('code', $code)->first();
 
         if (!empty($product->discount)) {
 

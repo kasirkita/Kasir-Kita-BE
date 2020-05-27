@@ -15,6 +15,7 @@ use Excel;
 use App\Imports\ProductImport;
 use App\Exports\ProductExport;
 use PDF;
+use App\ProductUnit;
 
 class ProductController extends Controller
 {
@@ -177,6 +178,31 @@ class ProductController extends Controller
         $stock_detail->user_id = auth()->user()->id;
         $stock->details()->save($stock_detail);
 
+        if (!empty($request->units)) {
+
+            foreach ($request->units as $multiple_unit) {
+
+                $units_unit = Unit::firstOrNew([
+                    'slug' => Str::slug($multiple_unit['unit_id'])
+                ]);
+                $units_unit->name = $multiple_unit['unit_id'];
+                $units_unit->save();
+
+                $product_unit = ProductUnit::firstOrNew([
+                    'product_id' => $product->id,
+                    'unit_id' => $units_unit->id
+                ]);
+                
+                $product_unit->convertion = $multiple_unit['convertion'];
+                $product_unit->unit_name = $multiple_unit['unit_label'];
+                $product_unit->unit_id = $units_unit->id;
+                $product_unit->price = $multiple_unit['price'];
+                $product_unit->wholesale = $multiple_unit['wholesale'];
+                $product_unit->save();
+
+            }
+        }
+
         return response()->json([
             'type' => 'success',
             'message' => 'Data berhasil disimpan!'
@@ -186,7 +212,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::findOrFail($id)->load(['category', 'qty', 'unit']);
+        $product = Product::findOrFail($id)->load(['category', 'qty', 'unit', 'units']);
 
         return response()->json([
             'type' => 'success',
@@ -209,7 +235,7 @@ class ProductController extends Controller
     {
 
         $product = Product::withTrashed()->where('_id', $id)->first();
-        $product->stock->details()->forceDelete();
+        $product->qty->details()->forceDelete();
         $product->qty()->forceDelete();
         $product->forceDelete();
 
