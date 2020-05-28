@@ -105,7 +105,7 @@ class SalesController extends Controller
                 $sales_detail->price =  $price;
                 $sales_detail->qty = $detail['qty'];
                 $sales_detail->unit_id = !empty($unit) ? $unit['unit_id'] : $detail['unit_id'];
-                $sales_detail->unit_name = !empty($unit) ? $unit['unit_name'] : $detail['unit_name'];
+                $sales_detail->unit_name = !empty($unit) ? $unit['unit_name'] : $detail['unit'];
                 $sales_detail->subtotal = $subtotal;
                 $sales_detail->discount = $discount;
                 $sales_detail->total = ($subtotal - $discount);
