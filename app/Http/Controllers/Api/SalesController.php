@@ -94,16 +94,17 @@ class SalesController extends Controller
 
                 $fix_price = $request->customer_type == 'wholesaler' ? $detail['wholesale'] : $detail['price'];
                 $price = !empty($unit) ? $request->customer_type == 'wholesaler' ? $unit['wholesale'] : $unit['price'] : $fix_price;
-                
+                $qty = !empty($unit) ? (int)($unit['convertion'] * $detail['qty']) : $detail['qty'];
 
                 $discount = !empty($detail['discount_amount']) ? $detail['type'] == 'percentage' ? $price * ($detail['discount_amount'] / 100) : $detail['discount_amount'] : 0;
                 $subtotal = $price * $detail['qty'];
                 $sales_detail = new SalesDetail;
                 $sales_detail->product_id = $detail['_id'];
                 $sales_detail->product_name = $detail['name'];
-                $sales_detail->cost = $detail['cost'];
+                $sales_detail->cost = $detail['cost'] * $qty;
                 $sales_detail->price =  $price;
                 $sales_detail->qty = $detail['qty'];
+                $sales_detail->convertion = !empty($unit) ? $unit['convertion'] : 1;
                 $sales_detail->unit_id = !empty($unit) ? $unit['unit_id'] : $detail['unit_id'];
                 $sales_detail->unit_name = !empty($unit) ? $unit['unit_name'] : $detail['unit'];
                 $sales_detail->subtotal = $subtotal;
@@ -112,8 +113,7 @@ class SalesController extends Controller
                 $sales->details()->save($sales_detail);
 
                 if ($request->status == 'done') {
-
-                    $qty = !empty($unit) ? (int)($unit['convertion'] * $detail['qty']) : $detail['qty'];
+                    
 
                     $product = Product::find($detail['_id']);
                     $product->decrement('stock', $qty);
